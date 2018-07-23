@@ -14,6 +14,7 @@
 typedef struct _send_command_flags{
 	uint8_t AT_CMGR;
 	uint8_t AT_CMGD;
+	uint8_t AT_CGSN;
 	uint8_t CMTI;
 	uint8_t INIT;
 }send_command_flags;
@@ -26,13 +27,15 @@ typedef struct _mqtt_send_command_flags{
 typedef struct _successful_command_flags{
 	uint8_t AT_CMGR;
 	uint8_t AT_CMGD;
+	uint8_t AT_CGSN;
 	uint8_t CMTI;
 	uint8_t INIT;
 }successful_command_flags;
 
 
 typedef struct _at_commands{
-	uint8_t init[42];
+	uint8_t init[37];
+	uint8_t AT_CGSN[12];
 	uint8_t AT_CMGD[12];
 	uint8_t AT_CMGR[12];
 }at_commands;

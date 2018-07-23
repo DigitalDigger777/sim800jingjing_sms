@@ -94,7 +94,11 @@ static void treatmenATCommand(uint8_t data)
 
 	//treatment init
 	if(sendCommandFlags.INIT) {
-		sim800_INIT(data, &sendCommandFlags, &successfulCommandFlags, &moduleIMEI, &rxBuffer);
+		sim800_INIT(data, &sendCommandFlags, &successfulCommandFlags);
+	}
+
+	if(sendCommandFlags.AT_CGSN) {
+		sim800_AT_CGSN(data, &sendCommandFlags, &successfulCommandFlags, &moduleIMEI, &rxBuffer);
 	}
 
 	if(sendCommandFlags.AT_CMGR) {
@@ -121,6 +125,21 @@ static void sendATCommand()
 
 		//reset successful flag for init
 		successfulCommandFlags.INIT = 0U;
+
+		USART_WriteBlocking(SIM800_USART, atCommands.AT_CGSN, sizeof(atCommands.AT_CGSN));
+
+	    //next treatment command
+	    sendCommandFlags.AT_CGSN = 1U;
+	}
+
+	//get imai of module
+	if(successfulCommandFlags.AT_CGSN) {
+		//reset buffer
+		memset(rxBuffer, 0, sizeof(rxBuffer));
+		rxDataCounter = 0;
+
+		//reset successful flag for init
+		successfulCommandFlags.AT_CGSN = 0U;
 
 		//module is ready light RDY diode
 		GPIO_WritePinOutput(GPIO, 0U, BOARD_INITPINS_READY_LED_ID_PIN, 0U);

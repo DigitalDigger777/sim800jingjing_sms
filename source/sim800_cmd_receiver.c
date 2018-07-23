@@ -15,7 +15,7 @@ uint8_t waitStatus = 0;
 uint8_t waitConnectionStatus = 0;
 
 
-void sim800_INIT(uint8_t data, send_command_flags *s_flags, successful_command_flags *sf_flags, uint8_t *imei, uint8_t *buffer)
+void sim800_INIT(uint8_t data, send_command_flags *s_flags, successful_command_flags *sf_flags)
 {
     if(0 == waitOK && 48 == data){
     	waitOK++;
@@ -29,13 +29,6 @@ void sim800_INIT(uint8_t data, send_command_flags *s_flags, successful_command_f
 
     //end receive
     if (waitOK == 3){
-
-    	int i = 0;
-
-    	while(i < 15){
-    		imei[i] = buffer[i];
-    		i++;
-    	}
 
     	//reset flag for send command
     	s_flags->INIT = 0U;
@@ -190,7 +183,6 @@ void sim800_WiatSMS(uint8_t data, send_command_flags *s_flags, successful_comman
 
 }
 
-
 void sim800_AT_CMGD(uint8_t data, send_command_flags *s_flags, successful_command_flags *sf_flags)
 {
     if(0 == waitOK && 48 == data){
@@ -228,6 +220,55 @@ void sim800_AT_CMGD(uint8_t data, send_command_flags *s_flags, successful_comman
     	//reset flag for send command
     	s_flags->AT_CMGD = 0U;
     	sf_flags->AT_CMGD = 1U;
+
+    	waitError = 0;
+    }
+}
+
+void sim800_AT_CGSN(uint8_t data, send_command_flags *s_flags, successful_command_flags *sf_flags, uint8_t *imei, uint8_t *buffer)
+{
+    if(0 == waitOK && 48 == data){
+    	waitOK++;
+    } else if(1 == waitOK && 13 == data) {
+    	waitOK++;
+    } else if(2 == waitOK && 10 == data) {
+    	waitOK++;
+    } else {
+    	waitOK = 0;
+    }
+
+    //end receive
+    if (waitOK == 3){
+    	int i = 0;
+
+    	while(i < 15){
+    		imei[i] = buffer[i];
+    		i++;
+    	}
+
+    	s_flags->AT_CGSN = 0U;
+    	sf_flags->AT_CGSN = 1U;
+
+    	waitOK = 0;
+    }
+
+    //Error
+    if(0 == waitError && 52 == data){
+    	waitError++;
+    } else if(1 == waitError && 13 == data) {
+    	waitError++;
+    } else if(2 == waitError && 10 == data) {
+    	waitError++;
+    } else {
+    	waitError = 0;
+    }
+
+    //end receive
+    if (waitError == 3){
+
+    	//reset flag for send command
+    	s_flags->AT_CGSN = 0U;
+    	sf_flags->AT_CGSN = 1U;
 
     	waitError = 0;
     }
